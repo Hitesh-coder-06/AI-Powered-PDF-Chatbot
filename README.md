@@ -1,7 +1,7 @@
  **AI-Powered PDF Chatbot**
 
 An intelligent offline AI chatbot that allows users to upload PDF documents or images and ask questions based on their content.
-The application uses **Ollama (Llama 3.2)** for local LLM inference and **EasyOCR** for extracting text from images, ensuring complete offline functionality without relying on cloud APIs.This Model is also contain the cloud API functionality so simply add link of the API and use 
+The application uses **Ollama (Llama 3.2)** for local LLM inference and **EasyOCR** for extracting text from images, ensuring complete offline functionality without relying on cloud APIs. 
 
 
 ---
