@@ -9,18 +9,6 @@ const { spawn } = require("child_process");
 
 const ollama = new Ollama();
 
-// ===================================================
-// OPTIONAL ONLINE MODEL (Groq)
-// Uncomment these lines to enable online mode
-// ===================================================
-
-// require("dotenv").config();
-// const Groq = require("groq-sdk");
-
-// const groq = new Groq({
-//     apiKey: process.env.GROQ_API_KEY,
-// });
-
 const app = express();
 
 app.use(cors());
@@ -418,38 +406,6 @@ ${question}
             ]
 
         });
-        // =======================================================
-// ONLINE VERSION (Groq)
-// Uncomment this block if you want to use Groq API
-// =======================================================
-
-// const completion = await groq.chat.completions.create({
-//     model: "llama-3.3-70b-versatile",
-//     messages: [
-//         {
-//             role: "system",
-//             content: `
-// You are a bilingual PDF assistant.
-// Answer ONLY using the provided PDF content.
-// Response language: ${responseLanguage}
-//             `
-//         },
-//         {
-//             role: "user",
-//             content: `
-// PDF Content:
-//
-// ${relevantChunk}
-//
-// Question:
-//
-// ${question}
-// `
-//         }
-//     ]
-// });
-
-// const text = completion.choices[0].message.content;
 
         const text = response.message.content;
 
