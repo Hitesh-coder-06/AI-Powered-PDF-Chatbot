@@ -4,8 +4,8 @@ An intelligent AI chatbot that allows users to upload PDF documents or images an
 
 The application supports **two modes**:
 
-* **Offline Mode** — Uses **Ollama (Llama 3.2)** for local AI inference and **EasyOCR** for image text extraction. This mode works completely offline and keeps user data on the local machine.
-* **Online Mode** — Uses **Groq API** through `Online_server.js` and is designed for **cloud deployment**. This mode can be used when deploying the backend on platforms such as Render.
+* **Offline Mode** — Uses **Ollama (Llama 3.2)** for local AI inference and **EasyOCR** for image text extraction. This mode works completely offline and keeps user data on the local machine. this modes is use both format text and pdf
+* **Online Mode** — Uses **Groq API** through `Online_server.js` and is designed for **cloud deployment**. This mode can be used when deploying the backend on platforms such as Render. this mode only support the pdf format. This mode is testing the UI and functionality of the project that how it responding through pdf upload 
 
 ---
 
