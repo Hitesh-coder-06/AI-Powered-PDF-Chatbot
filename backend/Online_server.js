@@ -1,24 +1,30 @@
-//this file is use when you want to run this completely 
-//this file is use "GROK API" 
-//all functionality is same like pdf and imgae extraction
+// Online deployment server
+// Uses Groq API for cloud/online testing and deployment.
+// Supports PDF upload and document-based chat.
+// Image OCR is intentionally not included in the online server because
+// EasyOCR/PyTorch can exceed the memory available on low-memory cloud instances.
 
 const path = require("path");
+
 require("dotenv").config({
     path: path.join(__dirname, ".env")
 });
+
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
-const { spawn } = require("child_process");
 const Groq = require("groq-sdk");
 
 const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// Groq model
+// ======================
+// Groq Model
+// ======================
+
 const GROQ_MODEL = "openai/gpt-oss-120b";
 
 // ======================
@@ -77,7 +83,7 @@ app.get("/health", (req, res) => {
 
     res.json({
         status: "OK",
-        message: "Online AI PDF Chatbot backend is running"
+        message: "Online AI PDF Chatbot backend is running (PDF mode)"
     });
 
 });
@@ -91,20 +97,29 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
     try {
 
         if (!req.file) {
+
             return res.status(400).json({
                 message: "No PDF file uploaded"
             });
+
         }
 
-        const dataBuffer = fs.readFileSync(req.file.path);
+        const dataBuffer =
+            fs.readFileSync(req.file.path);
 
-        const data = await pdfParse(dataBuffer);
+        const data =
+            await pdfParse(dataBuffer);
 
-        pdfText = data.text || "";
+        pdfText =
+            data.text || "";
 
         pdfChunks = [];
 
-        for (let i = 0; i < pdfText.length; i += 1000) {
+        for (
+            let i = 0;
+            i < pdfText.length;
+            i += 1000
+        ) {
 
             pdfChunks.push(
                 pdfText.slice(i, i + 1000)
@@ -112,9 +127,12 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
 
         }
 
-        // Delete uploaded PDF after extracting text
+        // Delete uploaded PDF after extraction
+
         if (fs.existsSync(req.file.path)) {
+
             fs.unlinkSync(req.file.path);
+
         }
 
         console.log("=================================");
@@ -131,161 +149,22 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
 
     catch (error) {
 
-        console.log("PDF Upload Error:", error);
+        console.log(
+            "PDF Upload Error:",
+            error
+        );
 
-        if (req.file && fs.existsSync(req.file.path)) {
+        if (
+            req.file &&
+            fs.existsSync(req.file.path)
+        ) {
+
             fs.unlinkSync(req.file.path);
+
         }
 
         res.status(500).json({
             message: "Error Uploading PDF"
-        });
-
-    }
-
-});
-
-// ======================
-// Upload Image
-// ======================
-
-app.post("/uploadImage", upload.single("image"), async (req, res) => {
-
-    try {
-
-        if (!req.file) {
-            return res.status(400).json({
-                message: "No image uploaded"
-            });
-        }
-
-        const imagePath = req.file.path;
-
-        /*
-        For deployment:
-
-        Windows:
-        PYTHON_PATH=C:\Python313\python.exe
-
-        Linux:
-        PYTHON_PATH=python3
-        */
-
-        const pythonExe =
-            process.env.PYTHON_PATH || "python";
-
-        const python = spawn(
-            pythonExe,
-            [
-                path.join(
-                    __dirname,
-                    "ocr",
-                    "ocr.py"
-                ),
-                imagePath
-            ]
-        );
-
-        let extractedText = "";
-        let errorText = "";
-
-        python.stdout.on("data", (data) => {
-
-            extractedText += data.toString();
-
-        });
-
-        python.stderr.on("data", (data) => {
-
-            errorText += data.toString();
-
-        });
-
-        python.on("error", (error) => {
-
-            console.log(
-                "Python/OCR Error:",
-                error
-            );
-
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-
-            return res.status(500).json({
-                message: "OCR Failed"
-            });
-
-        });
-
-        python.on("close", (code) => {
-
-            if (code !== 0) {
-
-                console.log(
-                    "OCR Error:",
-                    errorText
-                );
-
-                if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath);
-                }
-
-                return res.status(500).json({
-                    message: "OCR Failed"
-                });
-
-            }
-
-            pdfText = extractedText;
-
-            pdfChunks = [];
-
-            for (
-                let i = 0;
-                i < pdfText.length;
-                i += 1000
-            ) {
-
-                pdfChunks.push(
-                    pdfText.slice(i, i + 1000)
-                );
-
-            }
-
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-
-            console.log("=================================");
-            console.log("Image Uploaded Successfully");
-            console.log(
-                "OCR Text Length :",
-                pdfText.length
-            );
-            console.log(
-                "Chunks :",
-                pdfChunks.length
-            );
-            console.log("=================================");
-
-            res.json({
-                message: "Image Uploaded Successfully"
-            });
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.log(
-            "Image Upload Error:",
-            error
-        );
-
-        res.status(500).json({
-            message: "Error Uploading Image"
         });
 
     }
@@ -300,9 +179,13 @@ app.post("/chat", async (req, res) => {
 
     try {
 
-        const question = req.body.question;
+        const question =
+            req.body.question;
 
-        if (!question || !question.trim()) {
+        if (
+            !question ||
+            !question.trim()
+        ) {
 
             return res.status(400).json({
                 answer: "Please enter a question."
@@ -310,21 +193,24 @@ app.post("/chat", async (req, res) => {
 
         }
 
-        const q = question
-            .toLowerCase()
-            .trim();
+        const q =
+            question
+                .toLowerCase()
+                .trim();
 
         // ======================
         // Hitesh Response
         // ======================
 
         if (
+
             q === "who is hitu" ||
             q === "who is hitesh" ||
             q === "who is hitesh rathore" ||
             q === "hitu" ||
             q === "hitesh" ||
             q === "hitesh rathore"
+
         ) {
 
             return res.json({
@@ -340,7 +226,8 @@ app.post("/chat", async (req, res) => {
         // Detect Language
         // ======================
 
-        let responseLanguage = "English";
+        let responseLanguage =
+            "English";
 
         const lowerQuestion =
             question.toLowerCase();
@@ -349,20 +236,28 @@ app.post("/chat", async (req, res) => {
             /[\u0900-\u097F]/.test(question)
         ) {
 
-            responseLanguage = "Hindi";
+            responseLanguage =
+                "Hindi";
 
         }
 
         else if (
 
-            lowerQuestion.includes("hinglish") ||
-            lowerQuestion.includes("roman hindi") ||
+            lowerQuestion.includes(
+                "hinglish"
+            ) ||
+
+            lowerQuestion.includes(
+                "roman hindi"
+            ) ||
+
             /\b(kya|kaise|kyu|kyon|hai|ho|kar|karo|seekhna|batao)\b/
                 .test(lowerQuestion)
 
         ) {
 
-            responseLanguage = "Hinglish";
+            responseLanguage =
+                "Hinglish";
 
         }
 
@@ -375,12 +270,14 @@ app.post("/chat", async (req, res) => {
         // Check PDF
         // ======================
 
-        if (pdfChunks.length === 0) {
+        if (
+            pdfChunks.length === 0
+        ) {
 
             return res.json({
 
                 answer:
-                    "Please upload a PDF first."
+                    "Please upload a PDF first. Image OCR is available only in the offline version."
 
             });
 
@@ -391,6 +288,7 @@ app.post("/chat", async (req, res) => {
         // ======================
 
         let relevantChunk = "";
+
         let maxScore = 0;
 
         const stopWords = [
@@ -420,31 +318,34 @@ app.post("/chat", async (req, res) => {
 
         ];
 
-        const words = question
+        const words =
+            question
+                .toLowerCase()
+                .replace(/[^\w\s]/g, "")
+                .split(/\s+/)
+                .filter(
+                    word =>
+                        !stopWords.includes(word)
+                );
 
-            .toLowerCase()
-
-            .replace(/[^\w\s]/g, "")
-
-            .split(/\s+/)
-
-            .filter(
-                word =>
-                    !stopWords.includes(word)
-            );
-
-        for (const chunk of pdfChunks) {
+        for (
+            const chunk of pdfChunks
+        ) {
 
             let score = 0;
 
             const chunkLower =
                 chunk.toLowerCase();
 
-            for (const word of words) {
+            for (
+                const word of words
+            ) {
 
                 if (
+
                     word.length > 2 &&
                     chunkLower.includes(word)
+
                 ) {
 
                     score++;
@@ -453,11 +354,15 @@ app.post("/chat", async (req, res) => {
 
             }
 
-            if (score > maxScore) {
+            if (
+                score > maxScore
+            ) {
 
-                maxScore = score;
+                maxScore =
+                    score;
 
-                relevantChunk = chunk;
+                relevantChunk =
+                    chunk;
 
             }
 
@@ -468,7 +373,9 @@ app.post("/chat", async (req, res) => {
             maxScore
         );
 
-        if (maxScore === 0) {
+        if (
+            maxScore === 0
+        ) {
 
             return res.json({
 
@@ -491,7 +398,9 @@ app.post("/chat", async (req, res) => {
         // Check Groq API Key
         // ======================
 
-        if (!process.env.GROQ_API_KEY) {
+        if (
+            !process.env.GROQ_API_KEY
+        ) {
 
             return res.status(500).json({
 
@@ -509,15 +418,18 @@ app.post("/chat", async (req, res) => {
         const completion =
             await groq.chat.completions.create({
 
-                model: GROQ_MODEL,
+                model:
+                    GROQ_MODEL,
 
-                temperature: 0.2,
+                temperature:
+                    0.2,
 
                 messages: [
 
                     {
 
-                        role: "system",
+                        role:
+                            "system",
 
                         content: `
 
@@ -572,7 +484,8 @@ Do not mix languages.
 
                     {
 
-                        role: "user",
+                        role:
+                            "user",
 
                         content: `
 
@@ -607,11 +520,14 @@ ${question}
             "Bot Answer:"
         );
 
-        console.log(text);
+        console.log(
+            text
+        );
 
         res.json({
 
-            answer: text
+            answer:
+                text
 
         });
 
@@ -656,22 +572,27 @@ console.log(
     fs.existsSync(distPath)
 );
 
-if (fs.existsSync(distPath)) {
+if (
+    fs.existsSync(distPath)
+) {
 
     app.use(
         express.static(distPath)
     );
 
-    app.get("/", (req, res) => {
+    app.get(
+        "/",
+        (req, res) => {
 
-        res.sendFile(
-            path.join(
-                distPath,
-                "index.html"
-            )
-        );
+            res.sendFile(
+                path.join(
+                    distPath,
+                    "index.html"
+                )
+            );
 
-    });
+        }
+    );
 
 }
 
@@ -682,6 +603,7 @@ if (fs.existsSync(distPath)) {
 const server =
     app.listen(
         PORT,
+        "0.0.0.0",
         () => {
 
             console.log(
