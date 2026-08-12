@@ -8,7 +8,7 @@ The application supports **two modes**:
 * **Online Mode** — Uses **Groq API** through `Online_server.js` and is designed for **cloud deployment**. This mode can be used when deploying the backend on platforms such as Render.
 * Online mode only support the pdf format. This mode is for testing the UI and functionality of the project that how it responding through pdf upload
 * live link:https://ai-powered-pdf-chatbot-ofeu.onrender.com/  (through this link access online mode)
-* Extension tab->download .exe file for complete offline model which include all feature
+* Release->download **.exe** file for complete offline model which include all feature
 
 ---
 
