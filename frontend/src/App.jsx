@@ -8,6 +8,12 @@ import ChatMessages from "./components/ChatMessages";
 import ChatInput from "./components/ChatInput";
 import Footer from "./components/Footer";
 
+// Backend URL
+// Local: http://localhost:5000
+// Online: VITE_API_URL from Render
+const API_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 
 function App() {
 
@@ -39,9 +45,7 @@ function App() {
             return;
         }
 
-
         setFileName(file.name);
-
 
         const formData = new FormData();
 
@@ -54,7 +58,7 @@ function App() {
 
             formData.append("pdf", file);
 
-            url = "http://localhost:5000/upload";
+            url = `${API_URL}/upload`;
 
         }
 
@@ -69,7 +73,7 @@ function App() {
 
             formData.append("image", file);
 
-            url = "http://localhost:5000/uploadImage";
+            url = `${API_URL}/uploadImage`;
 
         }
 
@@ -167,7 +171,7 @@ function App() {
         try {
 
             const response = await fetch(
-                "http://localhost:5000/chat",
+                `${API_URL}/chat`,
                 {
                     method: "POST",
 
